@@ -133,7 +133,18 @@
 - **用户名**: bor799
 - **邮箱**: 2822887579@qq.com
 - **主页**: https://github.com/bor799
-- **工作区仓库**: https://github.com/bor799/claude-code-workspace
+- **工作区仓库**: https://github.com/bor799/-claude-code-workspace-
+- ⚠️ **注意**: 仓库名称前后都有横杠
+
+### GitHub 认证
+
+- **Token 已创建**: ✅ 是
+- **Token 位置**: 已配置到 Git 远程仓库
+- **Token 名称**: claude-code-sync
+- **Token 权限**: repo (完整仓库访问)
+- **Token 创建日期**: 2026-02-02
+
+**重要**: Token 已保存在 Git 配置中，无需每次输入。如需更换，请访问 https://github.com/settings/tokens
 
 ### 同步机制
 
