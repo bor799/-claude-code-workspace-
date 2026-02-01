@@ -126,5 +126,43 @@
 
 ---
 
+## GitHub 配置
+
+### 仓库信息
+
+- **用户名**: bor799
+- **邮箱**: 2822887579@qq.com
+- **主页**: https://github.com/bor799
+- **工作区仓库**: https://github.com/bor799/claude-code-workspace
+
+### 同步机制
+
+**工作区位置**: `~/claude-code-workspace`
+
+**A 电脑 (macOS)**:
+- 推送: `cd ~/claude-code-workspace/scripts && ./sync-mac.sh push`
+- 拉取: `cd ~/claude-code-workspace/scripts && ./sync-mac.sh pull`
+- 状态: `cd ~/claude-code-workspace/scripts && ./sync-mac.sh status`
+
+**B 电脑 (Windows 11)**:
+- 推送: `cd $env:USERPROFILE\claude-code-workspace\scripts; .\sync-windows.ps1 push`
+- 拉取: `cd $env:USERPROFILE\claude-code-workspace\scripts; .\sync-windows.ps1 pull`
+- 状态: `cd $env:USERPROFILE\claude-code-workspace\scripts; .\sync-windows.ps1 status`
+
+### 更新流程
+
+1. 修改本地文件（CLAUDE.md、技能、文档）
+2. 运行同步脚本推送到 GitHub
+3. 在另一台电脑运行拉取脚本
+4. 自动安装到系统，立即可用
+
+### 认证方式
+
+使用 Claude Code 内置的 GitHub 代理进行认证，无需手动配置 Token 或 SSH 密钥。
+
+**详细配置指南**: 查看 `~/claude-code-workspace/docs/GitHub 配置指南-小白版.md`
+
+---
+
 **最后更新**: 2026-02-02
 **目标**: 通过 AI 辅助实现 10x 开发效率提升
