@@ -1,0 +1,11 @@
+📅 定时任务配置更新
+
+- 时间: 每周一早上 7:00
+- 日期: 2026-02-02
+- 状态: ✅ 已重新加载
+
+验证:
+```bash
+launchctl list | grep claudecode
+plutil -p StartCalendarInterval ~/Library/LaunchAgents/com.claudecode.sync.plist
+```
