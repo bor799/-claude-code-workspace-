@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# 备份文件
+*.backup
+*.bak
+
+# 临时文件
+*.tmp
+*.temp
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code 特定
+.claude-backup-*/
