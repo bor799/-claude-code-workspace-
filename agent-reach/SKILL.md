@@ -1,168 +1,122 @@
 ---
 name: agent-reach
-description: >
-  Use the internet: search, read, and interact with 13+ platforms including
-  Twitter/X, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu (小红书), Douyin (抖音),
-  WeChat Articles (微信公众号), LinkedIn, Boss直聘, RSS, Exa web search, and any web page.
-  Use when: (1) user asks to search or read any of these platforms,
-  (2) user shares a URL from any supported platform,
-  (3) user asks to search the web, find information online, or research a topic,
-  (4) user asks to post, comment, or interact on supported platforms,
-  (5) user asks to configure or set up a platform channel.
-  Triggers: "搜推特", "搜小红书", "看视频", "搜一下", "上网搜", "帮我查", "全网搜索",
-  "search twitter", "read tweet", "youtube transcript", "search reddit",
-  "read this link", "看这个链接", "B站", "bilibili", "抖音视频",
-  "微信文章", "公众号", "LinkedIn", "GitHub issue", "RSS",
-  "search online", "web search", "find information", "research",
-  "帮我配", "configure twitter", "configure proxy", "帮我安装".
+version: 1.0.0
+description: |
+  互联网工具路由：自动选择最佳工具处理 URL 和搜索请求。
+  支持 13+ 平台：Twitter/X、Reddit、YouTube、GitHub、Bilibili、小红书、抖音、
+  微信文章、LinkedIn、Boss直聘、RSS、Exa 搜索及任意网页。
+trigger:
+  - URL
+  - 链接
+  - 搜索
+  - 读取
+allowed-tools:
+  - Bash
+  - Read
+  - Skill
+metadata:
+  author: Murphy
+  category: 信息获取
+  health-check: agent-reach doctor
+  upstream: https://github.com/Panniantong/agent-reach
+  platforms: 13+
 ---
 
-# Agent Reach — Usage Guide
+# 快速开始
 
-Upstream tools for 13+ platforms. Call them directly.
+**检查状态**：`agent-reach doctor`
+**使用下方表格**：根据平台类型选择对应的命令
 
-Run `agent-reach doctor` to check which channels are available.
+---
 
-## ⚠️ Workspace Rules
+# 工具路由决策表
 
-**Never create files in the agent workspace.** Use `/tmp/` for temporary output and `~/.agent-reach/` for persistent data.
+## URL 处理
 
-## Web — Any URL
+| 类型 | 首选命令 |
+|------|----------|
+| 任意网页 | `curl "https://r.jina.ai/<url>"` |
+| Twitter/X | `xreach tweet <url> --json` |
+| 微信文章 | `wechat-read <url>` 或 `python3 ~/.agent-reach/tools/wechat-article-for-ai/main.py "<url>"` |
+| GitHub | `gh api /repos/owner/repo` |
+| YouTube/B站 | `yt-dlp --dump-json "<url>"` |
 
+## 搜索
+
+| 平台 | 首选命令 |
+|------|------|
+| 通用搜索 | `mcp__exa__web_search_exa` |
+| Twitter | `xreach search "<query>" --json` |
+| GitHub | `gh search repos "<query>"` |
+| Reddit | Exa MCP 或 `curl "https://r.jina.ai/http://reddit.com/r/xxx"` |
+
+## 常用命令速查
+
+### 读取内容
 ```bash
-curl -s "https://r.jina.ai/URL"
-```
+# 网页文章（自动提取正文）
+curl "https://r.jina.ai/https://example.com/article"
 
-## Web Search (Exa)
+# Twitter 推文
+xreach tweet "https://x.com/user/status/123" --json
 
-```bash
-mcporter call 'exa.web_search_exa(query: "query", numResults: 5)'
-mcporter call 'exa.get_code_context_exa(query: "code question", tokensNum: 3000)'
-```
+# 微信文章（需专用工具）
+wechat-read "https://mp.weixin.qq.com/s/xxx"
 
-## Twitter/X (xreach)
-
-```bash
-xreach search "query" -n 10 --json          # search
-xreach tweet URL_OR_ID --json                # read tweet (supports /status/ and /article/ URLs)
-xreach tweets @username -n 20 --json         # user timeline
-xreach thread URL_OR_ID --json               # full thread
-```
-
-## YouTube (yt-dlp)
-
-```bash
-yt-dlp --dump-json "URL"                     # video metadata
-yt-dlp --write-sub --write-auto-sub --sub-lang "zh-Hans,zh,en" --skip-download -o "/tmp/%(id)s" "URL"
-                                             # download subtitles, then read the .vtt file
-yt-dlp --dump-json "ytsearch5:query"         # search
-```
-
-## Bilibili (yt-dlp)
-
-```bash
-yt-dlp --dump-json "https://www.bilibili.com/video/BVxxx"
-yt-dlp --write-sub --write-auto-sub --sub-lang "zh-Hans,zh,en" --convert-subs vtt --skip-download -o "/tmp/%(id)s" "URL"
-```
-
-> Server IPs may get 412. Use `--cookies-from-browser chrome` or configure proxy.
-
-## Reddit
-
-```bash
-curl -s "https://www.reddit.com/r/SUBREDDIT/hot.json?limit=10" -H "User-Agent: agent-reach/1.0"
-curl -s "https://www.reddit.com/search.json?q=QUERY&limit=10" -H "User-Agent: agent-reach/1.0"
-```
-
-> Server IPs may get 403. Search via Exa instead, or configure proxy.
-
-## GitHub (gh CLI)
-
-```bash
-gh search repos "query" --sort stars --limit 10
+# GitHub 仓库
 gh repo view owner/repo
-gh search code "query" --language python
-gh issue list -R owner/repo --state open
 gh issue view 123 -R owner/repo
 ```
 
-## 小红书 / XiaoHongShu (mcporter)
+### 搜索信息
+```bash
+# 通用网络搜索
+mcp__exa__web_search_exa
+
+# Twitter 搜索
+xreach search "关键词" -n 10 --json
+
+# GitHub 搜索
+gh search repos "关键词" --limit 10
+gh search code "关键词" --language python
+```
+
+### 获取视频信息
+```bash
+# YouTube / Bilibili 元数据
+yt-dlp --dump-json "视频URL"
+
+# 下载字幕（翻译用）
+yt-dlp --write-sub --write-auto-sub --sub-lang "zh-Hans,zh,en" \
+  --skip-download -o "/tmp/%(id)s" "视频URL"
+```
+
+## ⚠️ 重要注意事项
+
+**工作区规则**：
+- ❌ 不要在 agent 工作区创建文件
+- ✅ 临时文件使用 `/tmp/`
+- ✅ 持久数据使用 `~/.agent-reach/`
+
+**平台限制**：
+- **Bilibili**：可能遇到 412 错误 → 使用 `--cookies-from-browser chrome` 或配置代理
+- **微信文章**：必须使用专用工具，无法用 curl/Jina 直接读取
+- **Reddit**：服务器 IP 可能被 403 → 优先使用 Exa 搜索
+- **小红书**：需要登录（使用 Cookie-Editor 导入 cookies）
+
+## 故障排查
 
 ```bash
-mcporter call 'xiaohongshu.search_feeds(keyword: "query")'
-mcporter call 'xiaohongshu.get_feed_detail(feed_id: "xxx", xsec_token: "yyy")'
-mcporter call 'xiaohongshu.get_feed_detail(feed_id: "xxx", xsec_token: "yyy", load_all_comments: true)'
-mcporter call 'xiaohongshu.publish_content(title: "标题", content: "正文", images: ["/path/img.jpg"], tags: ["tag"])'
+agent-reach doctor              # 检查可用通道
+agent-reach configure proxy URL # 配置代理
 ```
 
-> Requires login. Use Cookie-Editor to import cookies.
+**常见问题**：
+- Twitter 请求失败 → 配置代理
+- 微信文章无法读取 → 确保使用 `wechat-read` 命令
+- B站 412 错误 → 添加浏览器 cookies
 
-## 抖音 / Douyin (mcporter)
+---
 
-```bash
-mcporter call 'douyin.parse_douyin_video_info(share_link: "https://v.douyin.com/xxx/")'
-mcporter call 'douyin.get_douyin_download_link(share_link: "https://v.douyin.com/xxx/")'
-```
-
-> No login needed.
-
-## 微信公众号 / WeChat Articles
-
-**Search** (miku_ai):
-```python
-python3 -c "
-import asyncio
-from miku_ai import get_wexin_article
-async def s():
-    for a in await get_wexin_article('query', 5):
-        print(f'{a[\"title\"]} | {a[\"url\"]}')
-asyncio.run(s())
-"
-```
-
-**Read** (Camoufox — bypasses WeChat anti-bot):
-```bash
-cd ~/.agent-reach/tools/wechat-article-for-ai && python3 main.py "https://mp.weixin.qq.com/s/ARTICLE_ID"
-```
-
-> WeChat articles cannot be read with Jina Reader or curl. Must use Camoufox.
-
-## LinkedIn (mcporter)
-
-```bash
-mcporter call 'linkedin.get_person_profile(linkedin_url: "https://linkedin.com/in/username")'
-mcporter call 'linkedin.search_people(keyword: "AI engineer", limit: 10)'
-```
-
-Fallback: `curl -s "https://r.jina.ai/https://linkedin.com/in/username"`
-
-## Boss直聘 (mcporter)
-
-```bash
-mcporter call 'bosszhipin.get_recommend_jobs_tool(page: 1)'
-mcporter call 'bosszhipin.search_jobs_tool(keyword: "Python", city: "北京")'
-```
-
-Fallback: `curl -s "https://r.jina.ai/https://www.zhipin.com/job_detail/xxx"`
-
-## RSS
-
-```python
-python3 -c "
-import feedparser
-for e in feedparser.parse('FEED_URL').entries[:5]:
-    print(f'{e.title} — {e.link}')
-"
-```
-
-## Troubleshooting
-
-- **Channel not working?** Run `agent-reach doctor` — shows status and fix instructions.
-- **Twitter fetch failed?** Ensure `undici` is installed: `npm install -g undici`. Configure proxy: `agent-reach configure proxy URL`.
-
-## Setting Up a Channel ("帮我配 XXX")
-
-If a channel needs setup (cookies, Docker, etc.), fetch the install guide:
-https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md
-
-User only provides cookies. Everything else is your job.
+> 📖 **完整文档与所有平台示例**：https://github.com/Panniantong/agent-reach
+> 📋 **详细版本**：`shared/skills/agent-reach/SKILL.md`
