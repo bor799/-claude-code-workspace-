@@ -1,0 +1,48 @@
+# 目录配置文件 - 信息源管理 Skill v2.0.0
+# 支持多种目录类型：信息源（标准分类）、知识库（主题分类）
+
+directories:
+  # 信息源目录（原有）
+  - name: 信息源
+    path: "/Users/murphy/Documents/Obsidian Vault/信息源"
+    type: info_source
+    has_metadata: true
+    preserve_structure: false
+    add_metadata: false
+    categories:
+      - 商业
+      - 技术
+      - 投资
+      - 推特
+      - 播客
+      - 文章
+      - 访谈
+
+  # 兴趣领域目录（新增）
+  - name: 兴趣领域
+    path: "/Users/murphy/Documents/Obsidian Vault/兴趣领域"
+    type: knowledge_base
+    has_metadata: false
+    preserve_structure: true
+    add_metadata: true
+    categories: []
+
+  # 职业发展目录（新增）
+  - name: 职业发展
+    path: "/Users/murphy/Documents/Obsidian Vault/职业发展"
+    type: knowledge_base
+    has_metadata: false
+    preserve_structure: true
+    add_metadata: true
+    categories: []
+
+# 配置说明：
+# - name: 目录名称（用于日志和显示）
+# - path: 目录的绝对路径
+# - type: 目录类型
+#   * info_source: 信息源（标准分类：商业、技术、投资等）
+#   * knowledge_base: 知识库（主题分类：从目录结构推断）
+# - has_metadata: 是否已有 YAML frontmatter
+# - preserve_structure: 是否保留现有目录结构（知识库通常为 true）
+# - add_metadata: 是否添加缺失的元数据（知识库通常为 true）
+# - categories: 标准分类列表（仅 info_source 需要）

@@ -1,7 +1,34 @@
 ---
 name: ui-ux-pro-max
-description: "UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refactor, check UI/UX code. Projects: website, landing page, dashboard, admin panel, e-commerce, SaaS, portfolio, blog, mobile app, .html, .tsx, .vue, .svelte. Elements: button, modal, navbar, sidebar, card, table, form, chart. Styles: glassmorphism, claymorphism, minimalism, brutalism, neumorphism, bento grid, dark mode, responsive, skeuomorphism, flat design. Topics: color palette, accessibility, animation, layout, typography, font pairing, spacing, hover, shadow, gradient. Integrations: shadcn/ui MCP for component search and examples."
+version: 1.0.0
+description: |
+  UI/UX 设计智能系统。67 种风格、96 种配色方案、57 种字体组合、25 种图表类型、13 种技术栈。
+
+  支持：设计规划、组件构建、设计评审、UX 问题修复。
+
+  触发条件：用户要求"设计 UI"、"构建界面"、"创建组件"、"评审设计"。
+trigger:
+  - UI
+  - UX
+  - 设计
+  - 界面
+  - 组件
+  - 前端
+  - 页面
+  - 布局
+  - 配色
+  - 字体
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - AskUserQuestion
+metadata:
+  author: Murphy
+  category: 设计工具
+  script: scripts/search.py
 ---
+
 # UI/UX Pro Max - Design Intelligence
 
 Comprehensive design guide for web and mobile applications. Contains 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines, and 25 chart types across 13 technology stacks. Searchable database with priority-based recommendations.
@@ -90,7 +117,6 @@ Search specific domains using the CLI tool below.
 
 ---
 
-
 ## Prerequisites
 
 Check if Python is installed:
@@ -148,31 +174,6 @@ This command:
 ```bash
 python3 skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --design-system -p "Serenity Spa"
 ```
-
-### Step 2b: Persist Design System (Master + Overrides Pattern)
-
-To save the design system for hierarchical retrieval across sessions, add `--persist`:
-
-```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name"
-```
-
-This creates:
-- `design-system/MASTER.md` — Global Source of Truth with all design rules
-- `design-system/pages/` — Folder for page-specific overrides
-
-**With page-specific override:**
-```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard"
-```
-
-This also creates:
-- `design-system/pages/dashboard.md` — Page-specific deviations from Master
-
-**How hierarchical retrieval works:**
-1. When building a specific page (e.g., "Checkout"), first check `design-system/pages/checkout.md`
-2. If the page file exists, its rules **override** the Master file
-3. If not, use `design-system/MASTER.md` exclusively
 
 ### Step 3: Supplement with Detailed Searches (as needed)
 

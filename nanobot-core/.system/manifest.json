@@ -1,0 +1,23 @@
+{
+  "name": "nanobot-core",
+  "version": "1.0.0",
+  "description": "Nanobot 核心原则工作区 - 独立项目配置",
+  "workspace": "~/claude-code-workspace/nanobot-core",
+  "entry_points": {
+    "principles": ".system/principles.md",
+    "context": "context/session.md",
+    "rules": "rules/index.md"
+  },
+  "execution_mode": {
+    "direct": true,
+    "no_approval": true,
+    "max_permissions": true,
+    "process_verbosity": "silent"
+  },
+  "tool_priority": [
+    "agent-reach",
+    "mcp",
+    "builtin"
+  ],
+  "loaded_at": "2026-03-07T18:06:00+08:00"
+}

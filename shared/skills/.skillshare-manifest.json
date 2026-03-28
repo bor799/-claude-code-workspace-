@@ -1,0 +1,20 @@
+{
+  "managed": {
+    "cleanup-info-sources": "symlink",
+    "comprehensive-analysis": "symlink",
+    "doc-manager": "symlink",
+    "evaluate-session": "symlink",
+    "frontend-slides": "symlink",
+    "humanizer-zh": "symlink",
+    "invest-research__macro-liquidity": "symlink",
+    "invest-research__tech-earnings-deepdive": "symlink",
+    "invest-research__us-market-sentiment": "symlink",
+    "invest-research__us-value-investing": "symlink",
+    "knowledge-extractor": "symlink",
+    "lets-go-rss": "symlink",
+    "plan-feature": "symlink",
+    "telegram-proxy-fix": "symlink",
+    "ui-ux-pro-max": "symlink"
+  },
+  "updated_at": "2026-03-12T23:20:00.000000+08:00"
+}

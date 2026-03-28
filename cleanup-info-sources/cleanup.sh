@@ -108,6 +108,57 @@ find_duplicates() {
     rm -f "$temp_file"
 }
 
+# 合并检查：分类有效性和 frontmatter 精简度（性能优化：一次遍历完成两个检查）
+perform_all_checks() {
+    log_step "检查分类有效性和 frontmatter 精简度..."
+    local invalid_count=0
+    local unsimplified_count=0
+    local valid_categories="AI Agent研究解读|实践案例|技术创业|财经"
+    local deprecated_attrs="status|date:|author:|priority:|created:"
+    local invalid_results=""
+    local unsimplified_results=""
+
+    # 一次遍历完成所有检查
+    while IFS= read -r -d '' file; do
+        if [ -f "$file" ]; then
+            # 检查分类
+            category=$(grep "^category:" "$file" 2>/dev/null | head -1 | sed 's/category: *//' | tr -d '"'"'" | xargs)
+            if [ -n "$category" ] && ! echo "$category" | grep -qE "^($valid_categories)$"; then
+                invalid_results="${invalid_results}${file}|${category}"$'\n'
+                ((invalid_count++))
+            fi
+
+            # 检查 frontmatter
+            if grep -qE "^($deprecated_attrs):" "$file" 2>/dev/null; then
+                unsimplified_results="${unsimplified_results}${file}"$'\n'
+                ((unsimplified_count++))
+            fi
+        fi
+    done < <(find "$SOURCE_DIR" -name "*.md" -type f -print0 2>/dev/null | grep -z -v "归档")
+
+    # 输出结果（格式兼容原有调用方式）
+    if [ $invalid_count -gt 0 ]; then
+        echo -n "$invalid_results" | head -n -1
+    fi
+    echo "---"  # 分隔符
+    if [ $unsimplified_count -gt 0 ]; then
+        echo -n "$unsimplified_results" | head -n -1
+    fi
+    echo "---"  # 分隔符
+    echo "$invalid_count|$unsimplified_count"
+}
+
+# 兼容性包装函数（保持向后兼容）
+check_invalid_categories() {
+    local result=$(perform_all_checks)
+    echo "$result" | grep -A 1000 "^---" | head -n -1 | tail -n +2 | grep -v "^---"
+}
+
+check_unsimplified_frontmatter() {
+    local result=$(perform_all_checks)
+    echo "$result" | tail -n +2 | grep -v "^---"
+}
+
 # 移动文件到备份
 move_to_backup() {
     local file=$1
@@ -133,6 +184,8 @@ main_cleanup() {
     local removed_count=0
     local duplicate_count=0
     local untitled_count=0
+    local invalid_category_count=0
+    local unsimplified_count=0
 
     echo ""
     log_step "开始清理..."
@@ -150,8 +203,33 @@ main_cleanup() {
         done
     fi
 
-    # 处理重复文件（保留非时间戳版本）
-    # 这里需要更复杂的逻辑来识别哪一个是"规范"版本
+    # 检查无效分类
+    local invalid_categories=$(check_invalid_categories)
+    if [ "$invalid_categories" != "0" ]; then
+        echo ""
+        log_warn "发现 $invalid_categories 个文件使用了无效的分类"
+        echo "$invalid_categories" | while IFS= read -r line; do
+            if [ -n "$line" ]; then
+                file=$(echo "$line" | cut -d'|' -f1)
+                category=$(echo "$line" | cut -d'|' -f2)
+                echo "  - $file (category: $category)"
+            fi
+        done
+    fi
+
+    # 检查未精简的 frontmatter
+    local unsimplified=$(check_unsimplified_frontmatter)
+    if [ "$unsimplified" != "0" ]; then
+        echo ""
+        log_warn "发现 $unsimplified 个文件使用了已废弃的 frontmatter 属性"
+        echo "$unsimplified" | while IFS= read -r file; do
+            if [ -f "$file" ]; then
+                # 找出具体是哪些属性
+                deprecated=$(grep -E "^(status|date:|author:|priority:|created:):" "$file" 2>/dev/null | cut -d':' -f1 | tr '\n' ', ' | sed 's/,$//')
+                echo "  - $file (包含: $deprecated)"
+            fi
+        done
+    fi
 
     # 生成报告
     {
@@ -160,7 +238,14 @@ main_cleanup() {
         echo "| 原始文件数 | $original_count |"
         echo "| 清理文件数 | $removed_count |"
         echo "| 清理后数量 | $((original_count - removed_count)) |"
-        echo "| 清理比例 | $(echo "scale=1; $removed_count * 100 / $original_count" | bc)% |"
+        if [ $original_count -gt 0 ]; then
+            echo "| 清理比例 | $(echo "scale=1; $removed_count * 100 / $original_count" | bc)% |"
+        fi
+        echo ""
+        echo "## 分类验证"
+        echo ""
+        echo "- 无效分类文件: $invalid_categories 个"
+        echo "- 未精简 frontmatter: $unsimplified 个"
         echo ""
         echo "## 备份位置"
         echo ""
@@ -170,7 +255,8 @@ main_cleanup() {
         echo ""
         echo "1. 检查备份目录确认无误后可删除"
         echo "2. 更新索引文件"
-        echo "3. 检查元数据缺失的文件"
+        echo "3. 处理无效分类的文件（使用 reclassify_info_sources.py）"
+        echo "4. 精简未简化的 frontmatter"
     } >> "$REPORT_FILE"
 
     echo ""
@@ -179,7 +265,13 @@ main_cleanup() {
     echo "📊 清理统计:"
     echo "  原始文件: $original_count"
     echo "  清理文件: $removed_count"
-    echo "  清理比例: $(echo "scale=1; $removed_count * 100 / $original_count" | bc)%"
+    if [ $original_count -gt 0 ]; then
+        echo "  清理比例: $(echo "scale=1; $removed_count * 100 / $original_count" | bc)%"
+    fi
+    echo ""
+    echo "🔍 分类验证:"
+    echo "  无效分类: $invalid_categories 个"
+    echo "  未精简 frontmatter: $unsimplified 个"
     echo ""
     echo "📁 备份位置: $BACKUP_DIR"
     echo "📄 报告文件: $REPORT_FILE"
