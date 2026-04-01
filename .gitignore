@@ -1,1 +1,24 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# 临时文件和缓存
+.codepilot-uploads/
+output/
+*.tmp
+*.temp
+
+# 备份文件
+.backup/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+Thumbs.db
+Desktop.ini

@@ -15,7 +15,7 @@ allowed-tools:
   - Glob
   - Grep
   - AskUserQuestion
-benefits-from: [infrastructure, content-creation]
+benefits-from: [content-creation]
 workflow:
   suggest: [evaluate-session]
 ---
@@ -120,6 +120,6 @@ log_info() { echo -e "${GREEN}[INFO]${NC} $1" >&2; }
 
 | 关系 | 专家 |
 |------|------|
-| **协作** | infrastructure（部署时需要开发支持） |
+| **协作** | information-processing（技术概念理解辅助开发） |
 | **协作** | content-creation（技术文档写作） |
 | **参考** | gstack 的 /investigate（系统性调试方法论） |

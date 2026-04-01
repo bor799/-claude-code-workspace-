@@ -36,7 +36,8 @@ allowed-tools:
 LEVEL 0: 上游工具（最高优先级）
 ├─ Twitter/X → xreach CLI
 ├─ 通用网页 → Jina Reader
-└─ 视频 → yt-dlp
+├─ 视频 → yt-dlp
+└─ 多平台趋势扫描 → last30days-skill（新增）
 
 LEVEL 1: MCP 服务器
 ├─ twitter-6551 MCP（Twitter 备用）
@@ -65,6 +66,7 @@ LEVEL 2: 内置工具（最后手段）
 - `url`: 内容链接
 - `content`: 原始内容（可选，如果 URL 无法访问）
 - `content_type`: 内容类型（article/tweet/video/other）
+- `topic`: 话题关键词（触发趋势扫描）
 
 ### 1.5 获取内容（如果是 URL）
 
@@ -85,19 +87,44 @@ yt-dlp --write-sub --skip-download -o "/tmp/%(id)s" "<URL>"
 
 ```
 ┌─────────────────────────────────────────┐
-│  收到内容                                │
+│  收到内容/话题                           │
 └──────────────┬──────────────────────────┘
                ↓
        ┌───────┴────────┐
        │                ↓
-       │         是 Python 脚本可用？
+       │     是否有 topic 参数？
        │                │
-       │         是 ────┴──── 否
-       │         │            │
-       ↓         ↓            ↓
-   直接调用    运行脚本    手动分析
-   LLM API    萃取系统    内容
+       │      是 ────┴──── 否
+       │      │            │
+       ↓      ↓            ↓
+  趋势扫描   直接处理   URL处理
+  (last30days)  内容      (获取URL)
+       ↓      ↓            ↓
+   返回热点   判断脚本   判断脚本
+   话题      是否可用    是否可用
 ```
+
+### 2.5 趋势扫描（新增功能）
+
+**当用户提供 topic 参数时，先进行趋势扫描：**
+
+```bash
+# 使用 last30days 扫描话题趋势
+cd ~/claude-code-workspace/shared/skills/last30days-skill
+python last30days.py "$topic" --days 30 --platforms all
+
+# 输出：
+# - 过去30天的讨论热度
+# - 主导观点和争议点
+# - 相关高价值内容链接
+# - 预测市场信号（如果有）
+```
+
+**应用场景：**
+- 选题调研：了解"什么在火"
+- 投资研究：了解"市场情绪"
+- 内容创作：找到"社区验证过的最佳实践"
+
 
 ### 3. 执行萃取
 

@@ -1,11 +1,13 @@
 ---
 name: information-processing
 preamble-tier: 1
-version: 0.1.0-pilot
+version: 0.2.0
 description: |
-  统一信息处理工作流：URL 识别 → 内容获取 → 知识萃取 → 存储归档。
-  Use when asked to: "read this link", "看这个链接", "搜一下", "帮我查", "extract", "萃取",
-  "看这个", "帮我读", or user shares any URL.
+  信息处理专家 v2：三阶段管线（获取 → 消化 → 归档）。
+  从信息输入到深度理解，完整交付认知。
+  Use when asked to: "read this link", "看这个链接", "搜一下", "帮我查",
+  "看这个", "帮我读", "extract", "帮我理解", "说人话", "解剖概念",
+  "读论文", "脑暴一下", or user shares any URL.
   Proactively suggest when: 用户发送 URL、分享链接、提到需要研究某个话题、
   或对话中出现了可以深入研究的信号。
 allowed-tools:
@@ -15,10 +17,10 @@ allowed-tools:
   - Glob
   - AskUserQuestion
   - WebSearch
-benefits-from: [knowledge-extractor, cleanup-info-sources, agent-reach, lets-go-rss]
+benefits-from: [knowledge-extractor, cleanup-info-sources, agent-reach, lets-go-rss, ljg-paper, ljg-learn, ljg-plain, ljg-roundtable, ljg-rank]
 workflow:
-  next: [cleanup-info-sources]
-  suggest: [knowledge-extractor]
+  next: [cleanup-info-sources, content-creation]
+  suggest: [knowledge-extractor, ljg-learn, ljg-plain]
 ---
 
 # 信息处理专家
@@ -32,8 +34,11 @@ workflow:
 | 用户发送 URL | `https://mp.weixin.qq.com/...` |
 | 用户要求搜索 | "帮我搜一下...", "搜推特", "全网搜索" |
 | 用户要求阅读 | "看这个链接", "帮我读", "extract" |
-| 用户要求研究 | "这个话题研究一下", "帮我查" |
-| 对话中出现研究信号 | 用户提到某个新概念/新工具/新趋势 |
+| 用户要求理解 | "帮我理解", "说人话", "解释一下" |
+| 概念深度分析 | "解剖概念", "这个概念是什么" |
+| 论文阅读 | "读论文", "分析论文", arxiv 链接 |
+| 脑暴/思辨 | "脑暴一下", "多角度分析" |
+| 领域降秩 | "这个领域靠什么撑着" |
 
 ## 工具优先级（严格遵守，不可跳级）
 
@@ -70,7 +75,9 @@ LEVEL 0 → LEVEL 1 → LEVEL 2
 
 ## 工作流
 
-### Step 1: 识别内容类型
+### 阶段一：信息获取（入口）
+
+**Step 1: 识别内容类型**
 
 ```
 收到 URL 或内容
@@ -84,28 +91,49 @@ LEVEL 0 → LEVEL 1 → LEVEL 2
     └── 无 URL（纯话题） → 搜索 → LEVEL 0 agent-reach / LEVEL 1 MCP
 ```
 
-### Step 2: 获取内容
+**Step 2: 获取内容**
 
 - 执行对应命令，获取 Markdown 格式内容
 - 如果内容为空或失败，立即降级到下一级
 - 获取成功后，展示内容的**前 3-5 行**让用户确认方向
 
-### Step 3: 判断处理方式
+**Step 3: 推送到 100X 知识萃取（前置筛选）**
 
-| 内容类型 | 处理方式 | 原因 |
-|----------|----------|------|
-| **文章/长内容** (>500字) | 推送到 100X 知识萃取 | 深度分析有价值 |
-| **推文/短内容** (<200字) | **询问用户意图** | 可能只需要快速翻译或归档 |
-| **代码仓库** | 分析或阅读 | 非内容处理范畴 |
-| **视频** | 提取字幕/摘要 | 需要 agent-reach |
+URL 进来后先过 100X 知识萃取系统做前置筛选，告诉用户"这里有什么"：
 
-**短内容询问模板**：
+```bash
+cd "<萃取路径>" && python add-link.py "<链接>"
+```
+
+100X 是前置过滤器，不是终点。它的价值在于帮你快速判断内容是否值得深度消化。
+
+### 阶段二：深度理解（消化）
+
+如果用户觉得内容有价值，拉原文做深度消化：
+
+| 内容类型 | 技能 | 触发 |
+|----------|------|------|
+| **论文/学术** | /ljg-paper | arxiv 链接、论文 PDF、学术研究 |
+| **概念/术语** | /ljg-learn | "帮我理解 XXX"、"解剖这个概念" |
+| **长文/复杂内容** | /ljg-plain | "说人话"、"白话翻译"、技术文档 |
+| **脑暴/多角度** | /ljg-roundtable | "脑暴一下"、"多角度讨论" |
+| **领域降秩** | /ljg-rank | "这个领域靠什么撑着"、"找根" |
+
+**短内容询问模板**（推文/短消息）：
 > 收到一条推文，你想怎么处理？
 > A) 深度萃取（推送到 100X）
 > B) 快速翻译/摘要
 > C) 两者都要
 
-### Step 4: 100X 知识萃取（生产者-消费者模式）
+### 阶段三：整理归档（出口）
+
+| 任务 | 说明 |
+|------|------|
+| 信息源去重 | cleanup-info-sources |
+| 脏乱差清理 | 定期维护信息源目录 |
+| 沉淀输出 | 将消化结果整理到知识库 |
+
+## 100X 知识萃取系统
 
 **路径**: `~/Documents/Obsidian Vault/职业发展/项目案例/100X_知识萃取系统/knowledge-extractor`
 
@@ -138,20 +166,18 @@ gh auth status 2>&1 | grep "Logged in" && echo "OK" || echo "NOT_AUTH"
 - **已认证**：直接使用 MCP/API
 - **未认证**：立即提供手动方案，不要尝试需要 token 的操作
 
-## 安全原则
+## 管辖的技能
 
-1. **工具降级而非中断**：一级失败就降级，不要卡住
-2. **内容验证**：获取后检查内容是否完整（不是空内容、不是错误页）
-3. **备份优先**：修改任何文件前先备份
-4. **认证预检**：调用外部 API 前先检查认证状态
-
-## 与其他专家的关系
-
-| 下一步 | 触发条件 |
-|--------|----------|
-| /cleanup-info-sources | 信息源积累较多，需要整理去重时 |
-| /knowledge-extractor | 需要深度萃取单篇文章时 |
-| /lets-go-rss | 需要订阅内容源时 |
+| 技能 | 用途 | 触发 |
+|------|------|------|
+| cleanup-info-sources | 信息源清理 | 去重、分类、备份 |
+| knowledge-extractor | 知识萃取 | 深度分析、信号提取 |
+| lets-go-rss | RSS 订阅 | 内容聚合、增量更新 |
+| /ljg-paper | 论文深度阅读 | arxiv 链接、论文、研究论文 |
+| /ljg-learn | 概念八维解剖 | "帮我理解 XXX"、"解剖概念" |
+| /ljg-plain | 白话解释 | "说人话"、"解释一下"、技术文档 |
+| /ljg-roundtable | 脑暴/多角度讨论 | "脑暴一下"、"多角度分析" |
+| /ljg-rank | 领域降秩 | "这个领域靠什么撑着" |
 
 ## 常见错误
 
@@ -161,3 +187,12 @@ gh auth status 2>&1 | grep "Logged in" && echo "OK" || echo "NOT_AUTH"
 | 自己跑 100X 的 main.py | 只用 add-link.py 推送链接 |
 | 未检查认证就调 GitHub API | 先 `gh auth status` |
 | 等待 100X 处理完成 | 推送后立即退出 |
+| URL 进来直接推 100X 就结束 | 100X 是前置筛选，用户觉得有价值要进一步深度消化 |
+
+## 与其他专家的关系
+
+| 关系 | 专家 | 说明 |
+|------|------|------|
+| **下游** | content-creation | 消化后的素材可供内容创作使用 |
+| **上游** | investment-research | 为投资分析提供信息输入 |
+| **协作** | development | 技术概念/论文消化辅助开发理解 |
