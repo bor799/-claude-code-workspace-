@@ -17,7 +17,7 @@ allowed-tools:
   - Glob
   - AskUserQuestion
   - WebSearch
-benefits-from: [knowledge-extractor, cleanup-info-sources, agent-reach, lets-go-rss, ljg-paper, ljg-learn, ljg-plain, ljg-roundtable, ljg-rank]
+benefits-from: [knowledge-extractor, cleanup-info-sources, agent-reach, lets-go-rss, ljg-paper, ljg-learn, ljg-plain, ljg-roundtable, ljg-rank, last30days-skill, fireworks-tech-graph]
 workflow:
   next: [cleanup-info-sources, content-creation]
   suggest: [knowledge-extractor, ljg-learn, ljg-plain]
@@ -178,6 +178,40 @@ gh auth status 2>&1 | grep "Logged in" && echo "OK" || echo "NOT_AUTH"
 | /ljg-plain | 白话解释 | "说人话"、"解释一下"、技术文档 |
 | /ljg-roundtable | 脑暴/多角度讨论 | "脑暴一下"、"多角度分析" |
 | /ljg-rank | 领域降秩 | "这个领域靠什么撑着" |
+| last30days-skill | 跨平台话题调研 | "最近30天XXX"、"市场对XXX的看法"、"追踪XXX动态" |
+| fireworks-tech-graph | 技术图表生成 | "画图"、"架构图"、"流程图"、"可视化"、"出图"、"generate diagram" |
+
+## last30days 跨平台调研系统
+
+**能力**：扫描 Reddit、X、YouTube、TikTok、Instagram、Hacker News、Polymarket 等 10+ 平台最近 30 天的讨论，输出带引用的综合报告。
+
+### 使用场景
+
+| 场景 | 命令示例 | 输出 |
+|------|----------|------|
+| **话题调研** | `last30days "Claude Code 新功能"` | 8-12 条/源的综合报告 |
+| **深度调研** | `last30days "AI Agent" --deep` | 50-70 Reddit + 40-60 X |
+| **快速扫描** | `last30days "GPT-5" --quick` | 8-12 条/源，速度优先 |
+| **时间范围** | `last30days "XXX" --days=7` | 只看最近 7 天 |
+| **对比分析** | `last30days "Cursor vs Windsurf"` | 3 轮并行对比研究 |
+
+### 定时追踪（Watchlist）
+
+```bash
+# 添加追踪话题
+last30days watchlist add "AI Agent 最新动态"
+
+# 配合 cron 定时执行，结果存入 SQLite
+# 适合持续追踪竞品或行业趋势
+```
+
+### 输出处理
+
+last30days 输出 → `/ljg-plain` 白话解释 → 沉淀到知识库
+
+**配置文件**：`~/.config/last30days/.env`
+**最低成本**：1 个 ScrapeCreators API Key（覆盖 Reddit + TikTok + Instagram）
+**免费数据源**：Hacker News、Polymarket（无需 key）
 
 ## 常见错误
 
